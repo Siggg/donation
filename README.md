@@ -7,7 +7,7 @@ Solidity smart contract that facilitates cryptomoney donations from philantrophi
 ```
 geth --datadir="~/dev/donation/data" account new
 ```
-### intialize genesis for testnet
+### initialize genesis for testnet
 ```
 geth --datadir="~/dev/donation/data" init "customGENESIS.json"
 ```
@@ -15,6 +15,12 @@ geth --datadir="~/dev/donation/data" init "customGENESIS.json"
 ```
 geth --datadir "~/dev/donation/data" --identity "Participant1" --networkid "41514" --nodiscover --unlock "0" --port "30303"  --rpc --rpcaddr "localhost" --rpcport "8545" --rpcapi "admin,eth,miner,net,web3" --rpccorsdomain "*" --mine --minerthreads 1 --autodag --nat "any" --maxpeers "2" 
 ```
+
+### install javascript tools and librairies (truffle q web3)
+```
+npm install
+```
+
 ### compile contracts
 ```
 cd solidity
