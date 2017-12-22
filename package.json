@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "version": "0.0.1",
+  "description": "Donation NodeJS Server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo 'Error: no test specified' && exit 1",
+    "start:prod": "node server.js",
+    "start:dev": "gulp server",
+    "start": "forever start ./node_modules/gulp/bin/gulp.js server",
+    "stop": "forever stop ./node_modules/gulp/bin/gulp.js",
+    "deploy": "gulp truffle-deploy",
+    "gulp": "gulp"
+  },
+  "author": "FH",
+  "license": "ISC",
+  "dependencies": {
+    "node-schedule": "1.1.1",
+    "q": "1.4.1",
+    "web3": "0.16.0"
+  },
+  "devDependencies": {
+    "fs-extra": "0.30.0",
+    "truffle": "2.0.8"
+  }
+}

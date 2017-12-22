@@ -6,4 +6,4 @@ data/dapp
 data/nodekey
 data/nodes
 data/keystore
-
+node_modules
