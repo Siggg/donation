@@ -1,0 +1,13 @@
+{
+    "nonce": "0xdeadbeefdeadbeef",
+    "timestamp": "0x0",
+    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "extraData": "Donation Genesis Block",
+    "gasLimit": "0x0243d580",
+    "difficulty": "0x4000",
+    "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "coinbase": "0x0000000000000000000000000000000000000000",
+    "config": {
+        "homesteadBlock": 0
+    }
+}
