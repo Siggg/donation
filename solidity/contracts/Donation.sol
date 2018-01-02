@@ -20,8 +20,7 @@ contract Donation {
 	mapping (address => BeneficiaryData) beneficiaries;
 
 	// Events
-	event evtDonateAttempt(address donator, uint amount);
-	event evtDonateSuccess(address donator, uint amount);
+	event evtDonate(address donator, uint amount);
 	event evtSendFailed(address benef, uint amount);
 	event evtSendSuccess(address benef, uint amount);
 
@@ -148,32 +147,28 @@ contract Donation {
 		uint dust = msg.value % countBenef;
 		uint realAmount = msg.value - dust; 
 
-		evtDonateAttempt(msg.sender, realAmount);
+		evtDonate(msg.sender, realAmount);
 		address thisContract = this;
 		
-		if (thisContract.send(realAmount)) {
-			evtDonateSuccess(msg.sender, realAmount);
-			uint part = realAmount / countBenef;
-			for (uint i = 0; i < beneficiaryCountMax; i++) {
-				address benef = beneficiaryPositions[i];	
-				if (beneficiaries[benef].authorized) {		
-					if (!benef.send(part)) {
-						evtSendFailed(benef, part);
-					}
-					else {
-						evtSendSuccess(benef, part);
-					}
+		uint part = realAmount / countBenef;
+		for (uint i = 0; i < beneficiaryCountMax; i++) {
+			address benef = beneficiaryPositions[i];	
+			if (beneficiaries[benef].authorized) {		
+				if (!benef.send(part)) {
+					evtSendFailed(benef, part);
+				}
+				else {
+					evtSendSuccess(benef, part);
 				}
 			}
+		}
 
+		if (msg.sender.send(dust)) {
 
-			if (msg.sender.send(dust)) {
-
-			}
-		}		
-
+		}
 	}
 
+	// (PROMISE/withdraW TRANSFERT)
 	// donate
 	function give() public payable {
 		if (msg.value <= 0) throw;
@@ -184,23 +179,19 @@ contract Donation {
 		uint realAmount = msg.value - dust; 
 
 		evtGive(msg.sender, realAmount);
-		address thisContract = this;
-		
-		if (thisContract.send(realAmount)) {
-			uint part = realAmount / countBenef;
-			for (uint i = 0; i < beneficiaryCountMax; i++) {
-				address benef = beneficiaryPositions[i];	
-				if (beneficiaries[benef].authorized) {		
-					beneficiaries[benef].pendingReturn += part;
-				}
-			}
-			if (!msg.sender.send(dust)) {
 
+		uint part = realAmount / countBenef;
+		for (uint i = 0; i < beneficiaryCountMax; i++) {
+			address benef = beneficiaryPositions[i];	
+			if (beneficiaries[benef].authorized) {		
+				beneficiaries[benef].pendingReturn += part;
 			}
-		}		
+		}
+		if (!msg.sender.send(dust)) {
+
+		}
 
 	}
-
 
 	// Withdraw due wei from contract 
 	function withdraw() public returns (bool) {
