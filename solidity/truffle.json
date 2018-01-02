@@ -15,7 +15,7 @@
       "gas": 4712388,
       "gasPrice": 100000000000,
       "from": null
-   },
+    },
     "donation": {
       "addr_deployer": "0xcdb3f43a1e50d8ceb4a5fd52cdbd6fbd3d8ab4a6"
     }
