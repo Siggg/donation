@@ -9,6 +9,18 @@
         ],
         "images/": "images/"
     },
+    "networks": {
+	    "live": {
+	      "network_id": 1,
+	      "host": "127.0.0.1",
+	      "port": 8546
+	    },
+	    "testnet": {
+	      "network_id": 3,
+	      "host": "127.0.0.1",
+	      "port": 8545
+	    }
+    },
     "rpc": {
       "host": "localhost",
       "port": 8545,
