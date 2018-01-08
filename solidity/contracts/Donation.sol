@@ -1,4 +1,4 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.18;
 
 contract Donation {
 	// address owning the contract
@@ -35,7 +35,7 @@ contract Donation {
 	}
 
 	function () public payable {
-		throw;
+		revert();
 	}
 
     /*
@@ -48,7 +48,7 @@ contract Donation {
 
 	// Modifier restricting execution of a function to SuperAdmin
 	modifier onlySuperAdmin {
-	    if (msg.sender != superAdmin) throw; 
+	    if (msg.sender != superAdmin) revert(); 
 	    _;
 	}
     
@@ -61,7 +61,7 @@ contract Donation {
 
 	// Modifier restricting execution of a function to Certifier
 	modifier onlyCertifier {
-	    if (msg.sender != certifier) throw; 
+	    if (msg.sender != certifier) revert(); 
 	    _;
 	}
 
@@ -96,7 +96,7 @@ contract Donation {
 
 	// Paginate search of beneficiaries that has been registered at least once 
 	// starting from startIndex and returns 100 max beneficiaries.
-	function getPaginateBeneficiaries(uint startIndex, uint size) public returns (address[100]) {
+	function getPaginateBeneficiaries(uint startIndex, uint size) public constant returns (address[100]) {
 		address[100] memory res;
 		if (size > 100)
 			size = 100;
@@ -115,7 +115,7 @@ contract Donation {
 
 	// Paginate search of beneficiaries that has been registered at least once 
 	// starting from startIndex and returns 100 max beneficiaries.
-	function getPaginateActiveBeneficiaries(uint startIndex, uint size) public returns (address[100]) {
+	function getPaginateActiveBeneficiaries(uint startIndex, uint size) public constant returns (address[100]) {
 		address[100] memory res;
 		uint counter = 0;
 		if (size > 100)
@@ -140,9 +140,8 @@ contract Donation {
 	// Donation function that transfers wei amount among beneficiaries (evenly spread, dust of wei are returned to donator)
 	// msg.value contains the donation amount in wei
 	function donate() public payable {
-		if (msg.value <= 0) throw;
-		if (beneficiaryCount <= 0) throw;
-		if (msg.sender.balance < msg.value) throw;
+		if (msg.value <= 0) revert();
+		if (beneficiaryCount <= 0) revert();
 		uint countBenef = beneficiaryCount;
 		uint dust = msg.value % countBenef;
 		uint realAmount = msg.value - dust; 
@@ -171,9 +170,8 @@ contract Donation {
 	// (PROMISE/withdraW TRANSFERT)
 	// donate
 	function give() public payable {
-		if (msg.value <= 0) throw;
-		if (beneficiaryCount <= 0) throw;
-		if (msg.sender.balance < msg.value) throw;
+		if (msg.value <= 0) revert();
+		if (beneficiaryCount <= 0) revert();
 		uint countBenef = beneficiaryCount;
 		uint dust = msg.value % countBenef;
 		uint realAmount = msg.value - dust; 

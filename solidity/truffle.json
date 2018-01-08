@@ -18,7 +18,9 @@
 	    "testnet": {
 	      "network_id": 3,
 	      "host": "127.0.0.1",
-	      "port": 8545
+	      "port": 8545,
+        "gas": 500000,
+        "from": "0x5d64b367806c2ff524c4ba1e83e0220787020100"
 	    }
     },
     "rpc": {
@@ -29,6 +31,7 @@
       "from": null
     },
     "donation": {
-      "addr_deployer": "0xcdb3f43a1e50d8ceb4a5fd52cdbd6fbd3d8ab4a6"
+      "addr_deployer": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
+      "addr_certifier": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
     }
 }
