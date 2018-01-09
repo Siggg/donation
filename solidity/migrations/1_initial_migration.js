@@ -1,4 +1,5 @@
 var truffleConfig = require('../../solidity/truffle.json');
+	var Migrations = artifacts.require("Migrations");
 
 module.exports = function(deployer) {
    var ADDR_DEPLOYER = truffleConfig.donation.addr_deployer;

@@ -147,7 +147,6 @@ contract Donation {
 		uint realAmount = msg.value - dust; 
 
 		evtDonate(msg.sender, realAmount);
-		address thisContract = this;
 		
 		uint part = realAmount / countBenef;
 		for (uint i = 0; i < beneficiaryCountMax; i++) {

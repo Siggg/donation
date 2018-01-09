@@ -3,8 +3,9 @@ var fs = require('../../node_modules/fs-extra/lib');
 var Web3 = require('../../node_modules/web3');
 var truffleConfig = require('../../solidity/truffle.json');
 
-var DONATION = require('../../solidity/build/contracts/Donation.sol.js');
+//var DONATION = require('../../solidity/build/contracts/Donation.sol.js');
 
+var Donation = artifacts.require("Donation");
 
 module.exports = function(deployer) {
    var ADDR_DEPLOYER = truffleConfig.donation.addr_deployer;

@@ -19,19 +19,27 @@
 	      "network_id": 3,
 	      "host": "127.0.0.1",
 	      "port": 8545,
-        "gas": 500000,
-        "from": "0x5d64b367806c2ff524c4ba1e83e0220787020100"
-	    }
+              "gas": 500000,
+              "from": "0x5d64b367806c2ff524c4ba1e83e0220787020100"
+	    },
+	    "development": {
+	      "host": "localhost",
+	      "port": 8545,
+	      "gas": 4712388,
+	      "gasPrice": 100000000000,
+	      "from": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
+	      "network_id": "*"
+	    }	
     },
     "rpc": {
       "host": "localhost",
       "port": 8545,
       "gas": 4712388,
       "gasPrice": 100000000000,
-      "from": null
+      "from": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"
     },
     "donation": {
-      "addr_deployer": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
-      "addr_certifier": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
+      "addr_deployer": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
+      "addr_certifier": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"
     }
 }

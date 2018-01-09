@@ -6,7 +6,7 @@ contract Migrations {
   modifier restricted() {
     if (msg.sender == owner) _;
   }
-  function Migrations() {
+  function Migrations() public {
     owner = msg.sender;
   }
   function setCompleted(uint completed) public restricted {
