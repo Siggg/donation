@@ -3,19 +3,24 @@ var fs = require('../../node_modules/fs-extra/lib');
 var Web3 = require('../../node_modules/web3');
 var truffleConfig = require('../../solidity/truffle.json');
 
-var DONATION = require('../../solidity/build/contracts/Donation.sol.js');
+var DONATION = require('../../solidity/build/contracts/Donation.json');
+
+var Donation = artifacts.require("Donation");
+
+
 
 
 module.exports = function(deployer) {
    var ADDR_DEPLOYER = truffleConfig.donation.addr_deployer;
-   
+   var ADDR_CERTIFIER = truffleConfig.donation.addr_certifier;
+ 
    var adddonation;
 
    var donation;
 
     var deployDonation = function() {
         var def = q.defer();
-        deployer.deploy(Donation).then(function() {
+        deployer.deploy(Donation, ADDR_CERTIFIER, { "gas": 3000000, "from": ADDR_DEPLOYER }).then(function() {
             adddonation = Donation.address;
             donation = Donation.at(adddonation);
             console.log('  >> Donation deployed at address ', adddonation);
@@ -34,7 +39,7 @@ module.exports = function(deployer) {
                 __dirname + '/../../server/config/deploy-config.json', 
                 JSON.stringify({
                    'DONATION': adddonation,
-                   'DONATION_abi': DONATION.all_networks.default.abi,
+                   //'DONATION_abi': DONATION.all_networks.default.abi,
                 }),
                 'utf-8'
             );
@@ -46,7 +51,7 @@ module.exports = function(deployer) {
     };
 
     deployDonation()
-    .then(writeDeployConfigFile)
+    //.then(writeDeployConfigFile)
     .catch(function(err) {
         console.log('  >> ' + err);
     });
