@@ -11,7 +11,7 @@
 	      "port": 8545,
               "gas": 3000000,
               "from": "0x5d64b367806c2ff524c4ba1e83e0220787020100"
-	    }
+	    },
 	    "development": {
 	      "host": "localhost",
 	      "port": 8545,

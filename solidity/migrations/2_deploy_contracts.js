@@ -7,17 +7,12 @@ var DONATION = require('../../solidity/build/contracts/Donation.json');
 var Donation = artifacts.require("Donation");
 
 
-var DonationV2 = artifacts.require("DonationV2");
-
 module.exports = function(deployer) {
    var ADDR_DEPLOYER = truffleConfig.donation.addr_deployer;
    var ADDR_CERTIFIER = truffleConfig.donation.addr_certifier;
  
    var adddonation;
    var donation;
-
-   var adddonationV2;
-   var donationV2;
 
     var deployDonation = function() {
         var def = q.defer();
