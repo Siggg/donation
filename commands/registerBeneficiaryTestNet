@@ -1,0 +1,3 @@
+donation.registerBeneficiary.sendTransaction("0x5D64B367806c2ff524C4Ba1e83e0220787020100", {"gas": 500000, "from": "0x5D64B367806c2ff524C4Ba1e83e0220787020100"});
+
+
