@@ -29,7 +29,6 @@
       "from": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"
     },
     "donation": {
-      	// tesnet
 	"addr_deployer": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
       	"addr_certifier": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
 	"addr_benef1": "0xbe9621a82c923f4e762b9a980e0df59f28d86db2",
