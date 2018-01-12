@@ -1,15 +1,5 @@
 {
-    "build": {
-        "index.html": "index.html",
-        "app.js": [
-            "javascripts/app.js"
-        ],
-        "app.css": [
-            "stylesheets/app.css"
-        ],
-        "images/": "images/"
-    },
-    "networks": {
+   "networks": {
 	    "live": {
 	      "network_id": 1,
 	      "host": "127.0.0.1",
@@ -22,16 +12,25 @@
               "gas": 3000000,
               "from": "0x5d64b367806c2ff524c4ba1e83e0220787020100"
 	    }
+	    "development": {
+	      "host": "localhost",
+	      "port": 8545,
+	      "gas": 4712388,
+	      "gasPrice": 100000000000,
+	      "from": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
+	      "network_id": "*"
+	    }	
     },
     "rpc": {
       "host": "localhost",
       "port": 8545,
       "gas": 4500000,
       "gasPrice": 100000000000,
-      "from": null
+      "from": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"
     },
     "donation": {
-      	"addr_deployer": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
+      	// tesnet
+	"addr_deployer": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
       	"addr_certifier": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
 	"addr_benef1": "0xbe9621a82c923f4e762b9a980e0df59f28d86db2",
 	"addr_benef2": "0x879d9f2aae2b4274948eacd8a98661725a772435"

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-contract Donation {
+contract DonationV2 {
 	// address owning the contract
 	address superAdmin;
 
@@ -20,22 +20,20 @@ contract Donation {
 	mapping (address => BeneficiaryData) beneficiaries;
 
 	// Events
-	event evtDonate(address donator, uint amount);
 	event evtSendFailed(address benef, uint amount);
 	event evtSendSuccess(address benef, uint amount);
-
-	event evtGive(address donator, uint amount);
+	event evtSpread(uint amount, uint nbBenef);
 
 	// constructor
-	function Donation(address _certifier) public {
+	function DonationV2(address _certifier) public {
 		superAdmin = msg.sender;
 		certifier = _certifier;
 		beneficiaryCount = 0;
 		beneficiaryCountMax = 0;
 	}
 
+	// Allows to give wei to this contract via fallback function
 	function () public payable {
-		revert();
 	}
 
     /*
@@ -65,7 +63,11 @@ contract Donation {
 	    _;
 	}
 
+	// Before adding a new beneficiary, the contrat spread its balance among existing beneficiaries
 	function registerBeneficiary(address _beneficiary) public onlyCertifier {
+		if (this.balance > 0) {
+			flush();
+		}
 		if (beneficiaries[_beneficiary].isSet == false) {
 			// create new beneficiary
 			beneficiaries[_beneficiary] = BeneficiaryData(true, true, 0);
@@ -80,7 +82,11 @@ contract Donation {
 		}
 	}
 
+	// Before removing an existing beneficiary, the contrat spread its balance among existing beneficiaries
 	function unregisterBeneficiary(address _beneficiary) public onlyCertifier {
+		if (this.balance > 0) {
+			flush();
+		}
 		if (beneficiaries[_beneficiary].isSet) {
 			if (beneficiaries[_beneficiary].authorized == true) {
 				// desactivate beneficiary
@@ -136,17 +142,16 @@ contract Donation {
 		return res;
 	}
 
-	// (DIRECT TRANSFERT)
-	// Donation function that transfers wei amount among beneficiaries (evenly spread, dust of wei are returned to donator)
-	// msg.value contains the donation amount in wei
-	function donate() public payable {
-		if (msg.value <= 0) revert();
+	// Spread balance among beneficiaries
+	function flush() public onlyCertifier {
+		if (this.balance <= 0) revert();
 		if (beneficiaryCount <= 0) revert();
 		uint countBenef = beneficiaryCount;
-		uint dust = msg.value % countBenef;
-		uint realAmount = msg.value - dust; 
+		uint balance = this.balance;
+		uint dust = balance % countBenef;
+		uint realAmount = balance - dust; 
 
-		evtDonate(msg.sender, realAmount);
+		evtSpread(realAmount, countBenef);
 		
 		uint part = realAmount / countBenef;
 		for (uint i = 0; i < beneficiaryCountMax; i++) {
@@ -161,46 +166,6 @@ contract Donation {
 			}
 		}
 
-		if (msg.sender.send(dust)) {
-
-		}
-	}
-
-	// (PROMISE/withdraW TRANSFERT)
-	// donate
-	function give() public payable {
-		if (msg.value <= 0) revert();
-		if (beneficiaryCount <= 0) revert();
-		uint countBenef = beneficiaryCount;
-		uint dust = msg.value % countBenef;
-		uint realAmount = msg.value - dust; 
-
-		evtGive(msg.sender, realAmount);
-
-		uint part = realAmount / countBenef;
-		for (uint i = 0; i < beneficiaryCountMax; i++) {
-			address benef = beneficiaryPositions[i];	
-			if (beneficiaries[benef].authorized) {		
-				beneficiaries[benef].pendingReturn += part;
-			}
-		}
-		if (!msg.sender.send(dust)) {
-
-		}
-
-	}
-
-	// Withdraw due wei from contract 
-	function withdraw() public returns (bool) {
-		uint amount = beneficiaries[msg.sender].pendingReturn;
-		if (amount > 0){
-			beneficiaries[msg.sender].pendingReturn = 0;
-			if (!msg.sender.send(amount)) {
-				beneficiaries[msg.sender].pendingReturn = amount;
-				return false;
-			}
-		}
-		return true;
 	}
 
 }
