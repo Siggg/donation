@@ -1,11 +1,14 @@
-var account_deployer = "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"; //"0x5D64B367806c2ff524C4Ba1e83e0220787020100";
-var account_certifier = "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"; //"0x5D64B367806c2ff524C4Ba1e83e0220787020100";
+//var account_deployer = "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"; //"0x5D64B367806c2ff524C4Ba1e83e0220787020100";
+//var account_certifier = "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"; //"0x5D64B367806c2ff524C4Ba1e83e0220787020100";
 
 //var contract_testnet = "0x4c7e620cc5f302d6e3434abb1404f771efbdc482";
-
+var truffleConfig = require('../../solidity/truffle.json');
 var Donation = artifacts.require("Donation");
 
-var expectedHash;
+var ADDR_DEPLOYER = truffleConfig.donation_dev.addr_deployer;
+var ADDR_CERTIFIER = truffleConfig.donation_dev.addr_certifier;
+var ADDR_BENEF1 = truffleConfig.donation_dev.addr_benef1;
+var ADDR_BENEF2 = truffleConfig.donation_dev.addr_benef2;
 
 var watchTransaction = function(txhash, callback) {
 	try {
@@ -49,7 +52,7 @@ contract("Donation", function(accounts) {
 	it("check number of beneficiaries at initial state", function() {
 		return Donation.deployed().then(function(instance){
 			don = instance;
-			return	don.getBeneficiaryCount.call({from: account_deployer});
+			return	don.getBeneficiaryCount.call({from: ADDR_DEPLOYER});
 		}).then(function(count){ 
 			//console.log("number beneficiaries:", count.toNumber());
 			assert.equal(count.toNumber(), 0, "beneficiaries count should be 0");});	
@@ -58,7 +61,7 @@ contract("Donation", function(accounts) {
 	it("check beneficiaries at initial state", function() {
 		return Donation.deployed().then(function(instance){
 			don = instance;
-			return	instance["getPaginateBeneficiaries"].call(0, 99, {from: account_deployer});
+			return	instance["getPaginateBeneficiaries"].call(0, 99, {from: ADDR_DEPLOYER});
 		}).then(function(beneficiaries){ 
 			//console.log("beneficiaries(0,99):", beneficiaries);
 			for (var i in beneficiaries) {
@@ -71,35 +74,28 @@ contract("Donation", function(accounts) {
 		});	
 	});
 
-	it("register first account", function() {
+	it("register two beneficiary accounts", function() {
 		return Donation.deployed().then(function(instance){		
 			don = instance;
-			console.log("Attempt registerBeneficiary", account_certifier);
-			//return instance["registerBeneficiary"].sendTransaction(account_certifier, { "gas": 50000, "from": account_certifier});
-			return instance.registerBeneficiary(account_certifier, {gas: 100000, from: account_deployer});
+			console.log("Attempt registerBeneficiary", ADDR_BENEF1);
+			return instance.registerBeneficiary(ADDR_BENEF1, {gas: 200000, from: ADDR_CERTIFIER});
 		}).then(function(result){
 			console.log("Got confirmation", result.receipt, "...");
-
-			// return new Promise(function(resolve,reject) {
-			// 	watchTransaction(result.tx, function(err, res){ 
-			// 		if (err) {
-			// 			console.error("failed watching tx", result.tx); 
-			// 			reject();
-			// 		}
-			// 		else {
-			// 			if (res == true) {
-			// 				console.log("TX DONE", result.tx); 
-			// 			}
-			// 			resolve();
-			// 		}
-			// 	});
-			// });
-
 		}).then(function(){
-			return	don.getBeneficiaryCount.call({"from": account_deployer});
+			return	don.getBeneficiaryCount.call({"from": ADDR_DEPLOYER});
 		}).then(function(count){ 
 			console.log("number beneficiaries:", count.toNumber());
 			assert.equal(count.toNumber(),1, "beneficiaries count should be 1");
+		}).then(function(){
+			console.log("Attempt registerBeneficiary", ADDR_BENEF2);
+			return don.registerBeneficiary(ADDR_BENEF2, {gas: 200000, from: ADDR_CERTIFIER});
+		}).then(function(result){
+			console.log("Got confirmation", result.receipt, "...");
+		}).then(function(){
+			return	don.getBeneficiaryCount.call({"from": ADDR_DEPLOYER});
+		}).then(function(count){ 
+			console.log("number beneficiaries:", count.toNumber());
+			assert.equal(count.toNumber(),2, "beneficiaries count should be 2");
 		});
 		// .catch(function(err){
 		// 	console.error("ERROR:", err);
@@ -107,14 +103,27 @@ contract("Donation", function(accounts) {
 
 	});
 
+	it("check beneficiaries", function() {
+		return Donation.deployed().then(function(instance){
+			don = instance;
+			return	instance["getPaginateBeneficiaries"].call(0, 99, {from: ADDR_DEPLOYER});
+		}).then(function(beneficiaries){ 
+			//console.log("beneficiaries(0,99):", beneficiaries);
+			for (var i in beneficiaries) {
+				if (beneficiaries[i] == 0x0) { //0x0000000000000000000000000000000000000000
+				}
+				else {
+					console.log("beneficiary", i, beneficiaries[i]);
+				}
+			}
+		});	
+	});
 
-
-	it("register first account (second)", function() {
+	it("register one account (homemade async call)", function() {
 		return Donation.deployed().then(function(instance){		
 			don = instance;
-			console.log("Attempt registerBeneficiary", account_certifier);
-			return instance["registerBeneficiary"].sendTransaction(account_certifier, { "gas": 50000, "from": account_certifier});
-			//return instance.registerBeneficiary(account_certifier, {gas: 50000, from: account_deployer});
+			console.log("Attempt registerBeneficiary", ADDR_CERTIFIER);
+			return instance["registerBeneficiary"].sendTransaction(ADDR_CERTIFIER, { "gas": 200000, "from": ADDR_CERTIFIER});
 		}).then(function(tx){
 			console.log("Waiting confirmation of", tx, "...");
 
@@ -134,10 +143,10 @@ contract("Donation", function(accounts) {
 
 			});
 		}).then(function(){
-			return	don.getBeneficiaryCount.call({"from": account_deployer});
+			return	don.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
 		}).then(function(count){ 
 			console.log("number beneficiaries:", count.toNumber());
-			assert.equal(count.toNumber(),1, "beneficiaries count should be 1");
+			assert.equal(count.toNumber(),3, "beneficiaries count should be 3");
 		});
 		// .catch(function(err){
 		// 	console.error("ERROR:", err);
