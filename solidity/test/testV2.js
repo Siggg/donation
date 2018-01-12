@@ -28,6 +28,63 @@ contract("DonationV2", function(accounts) {
 		}).then(function(count){ 
 			console.log("number beneficiaries:", count.toNumber());
 			assert.equal(count.toNumber(),1, "beneficiaries count should be 1");
+		}).then(function(){
+			console.log("Attempt registerBeneficiary", ADDR_BENEF2);
+			return don.registerBeneficiary(ADDR_BENEF2, {gas: 200000, from: ADDR_CERTIFIER});
+		}).then(function(result){
+			console.log("Got confirmation", result.receipt, "...");
+		}).then(function(){
+			return	don.getBeneficiaryCount.call({"from": ADDR_DEPLOYER});
+		}).then(function(count){ 
+			console.log("number beneficiaries:", count.toNumber());
+			assert.equal(count.toNumber(),2, "beneficiaries count should be 2");
+		});
+		// .catch(function(err){
+		// 	console.error("ERROR:", err);
+		// });
+
+	});
+
+	var amount = 1000000;
+	it("donate " + amount + " wei", function() {
+		return DonationV2.deployed().then(function(instance){		
+			don = instance;
+			console.log("Attempt to donate via fallback function", amount, ADDR_DEPLOYER, DonationV2.address);
+			//return instance["registerBeneficiary"].sendTransaction(account_certifier, { "gas": 50000, "from": account_certifier});
+			return don.sendTransaction({value: amount, gas: 200000, from: ADDR_DEPLOYER, to: DonationV2.address});
+		}).then(function(result){
+			console.log("Got confirmation", result.receipt, "...");
+			console.log("Check contract balance", DonationV2.address);
+			return	web3.eth.getBalance(DonationV2.address);
+		}).then(function(balance){ 
+			console.log("contract balance:", balance.toNumber());
+			assert.equal(balance.toNumber(),amount, "contract balance should be " + amount);
+		}).then(function(){
+			return	web3.eth.getBalance(ADDR_BENEF1);
+		}).then(function(balance){ 
+			console.log("benef1 balance:", balance.toNumber());
+		}).then(function(){
+			return	web3.eth.getBalance(ADDR_BENEF2);
+		}).then(function(balance){ 
+			console.log("benef2 balance:", balance.toNumber());
+		}).then(function(){
+			console.log("Attempt to flush contrat balance");
+			return don.flush({gas: 200000, from: ADDR_DEPLOYER});
+		}).then(function(result){
+			console.log("Got confirmation", result.receipt, "...");
+			console.log("Check contract balance");
+			return	web3.eth.getBalance(DonationV2.address);
+		}).then(function(balance){ 
+			console.log("contract balance:", balance.toNumber());
+			assert.equal(balance.toNumber(),0, "contract balance should be 0");
+		}).then(function(){
+			return	web3.eth.getBalance(ADDR_BENEF1);
+		}).then(function(balance){ 
+			console.log("benef1 balance:", balance.toNumber());
+		}).then(function(){
+			return	web3.eth.getBalance(ADDR_BENEF2);
+		}).then(function(balance){ 
+			console.log("benef2 balance:", balance.toNumber());
 		});
 		// .catch(function(err){
 		// 	console.error("ERROR:", err);
