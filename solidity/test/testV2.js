@@ -14,35 +14,80 @@ var ADDR_BENEF2 = truffleConfig.donation_dev.addr_benef2;
 var don;
 contract("DonationV2", function(accounts) {
 
-	it("register first account", function() {
+	it("register two account", function() {
 		return DonationV2.deployed().then(function(instance){		
 			don = instance;
 			console.log("Attempt registerBeneficiary", ADDR_BENEF1);
-			//return instance["registerBeneficiary"].sendTransaction(account_certifier, { "gas": 50000, "from": account_certifier});
 			return instance.registerBeneficiary(ADDR_BENEF1, {gas: 200000, from: ADDR_CERTIFIER});
 		}).then(function(result){
-			console.log("Got confirmation", result.receipt, "...");
-
+			//console.log("Got confirmation", result.receipt, "...");
 		}).then(function(){
 			return	don.getBeneficiaryCount.call({"from": ADDR_DEPLOYER});
 		}).then(function(count){ 
-			console.log("number beneficiaries:", count.toNumber());
+			//console.log("number beneficiaries:", count.toNumber());
 			assert.equal(count.toNumber(),1, "beneficiaries count should be 1");
 		}).then(function(){
 			console.log("Attempt registerBeneficiary", ADDR_BENEF2);
 			return don.registerBeneficiary(ADDR_BENEF2, {gas: 200000, from: ADDR_CERTIFIER});
 		}).then(function(result){
-			console.log("Got confirmation", result.receipt, "...");
+			//console.log("Got confirmation", result.receipt, "...");
 		}).then(function(){
 			return	don.getBeneficiaryCount.call({"from": ADDR_DEPLOYER});
 		}).then(function(count){ 
-			console.log("number beneficiaries:", count.toNumber());
+			//console.log("number beneficiaries:", count.toNumber());
 			assert.equal(count.toNumber(),2, "beneficiaries count should be 2");
 		});
 		// .catch(function(err){
 		// 	console.error("ERROR:", err);
 		// });
 
+	});
+
+	it("check paginate accessor of beneficiaries", function() {
+		return DonationV2.deployed().then(function(instance){
+			don = instance;
+			return	instance.getPaginateBeneficiaries.call(0, 99, {from: ADDR_CERTIFIER});
+		}).then(function(beneficiaries){ 
+			//console.log("beneficiaries(0,99):", beneficiaries);
+			var addBenefs = [];
+			for (var i in beneficiaries) {
+				if (beneficiaries[i] == 0x0) { //0x0000000000000000000000000000000000000000
+
+				}
+				else {
+					console.log("beneficiary", i, beneficiaries[i]);
+					addBenefs.push(beneficiaries[i]);
+				}
+			}
+			assert.equal(addBenefs[0],ADDR_BENEF1, "beneficiary[0] should be " + ADDR_BENEF1);
+			assert.equal(addBenefs[1],ADDR_BENEF2, "beneficiary[1] should be " + ADDR_BENEF2);
+			assert.equal(addBenefs.length,2, "beneficiaries count should be 2");
+		});	
+	});
+
+	it("unregister an existing account and register it again", function() {
+		return DonationV2.deployed().then(function(instance){		
+			don = instance;
+			console.log("Attempt unregisterBeneficiary", ADDR_BENEF1);
+			return instance.unregisterBeneficiary(ADDR_BENEF1, {gas: 200000, from: ADDR_CERTIFIER});
+		}).then(function(result){
+			//console.log("Got confirmation", result.receipt, "...");
+		}).then(function(){
+			return	don.getBeneficiaryCount.call({"from": ADDR_DEPLOYER});
+		}).then(function(count){ 
+			//console.log("number beneficiaries:", count.toNumber());
+			assert.equal(count.toNumber(),1, "beneficiaries count should be 1");
+		}).then(function(){
+			console.log("Attempt registerBeneficiary", ADDR_BENEF1);
+			return don.registerBeneficiary(ADDR_BENEF1, {gas: 200000, from: ADDR_CERTIFIER});
+		}).then(function(result){
+			//console.log("Got confirmation", result.receipt, "...");
+		}).then(function(){
+			return	don.getBeneficiaryCount.call({"from": ADDR_DEPLOYER});
+		}).then(function(count){ 
+			//console.log("number beneficiaries:", count.toNumber());
+			assert.equal(count.toNumber(),2, "beneficiaries count should be 2");
+		});
 	});
 
 	var balanceBenef1;
@@ -59,8 +104,8 @@ contract("DonationV2", function(accounts) {
 			//return instance["registerBeneficiary"].sendTransaction(account_certifier, { "gas": 50000, "from": account_certifier});
 			return don.sendTransaction({value: amount, gas: 200000, from: ADDR_DEPLOYER, to: DonationV2.address});
 		}).then(function(result){
-			console.log("Got confirmation", result.receipt, "...");
-			console.log("Check contract balance", DonationV2.address);
+			//console.log("Got confirmation", result.receipt, "...");
+			//console.log("Check contract balance", DonationV2.address);
 			return	web3.eth.getBalance(DonationV2.address);
 		}).then(function(balance){ 
 			console.log("contract balance:", balance.toNumber());
@@ -79,8 +124,8 @@ contract("DonationV2", function(accounts) {
 			console.log("Attempt to flush contrat balance");
 			return don.flush({gas: 200000, from: ADDR_DEPLOYER});
 		}).then(function(result){
-			console.log("Got confirmation", result.receipt, "...");
-			console.log("Check contract balance");
+			//console.log("Got confirmation", result.receipt, "...");
+			//console.log("Check contract balance");
 			return	web3.eth.getBalance(DonationV2.address);
 		}).then(function(balance){ 
 			console.log("contract balance:", balance.toNumber());
