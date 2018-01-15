@@ -45,6 +45,12 @@ contract("DonationV2", function(accounts) {
 
 	});
 
+	var balanceBenef1;
+	var balanceBenef2;
+
+	var expectedBalanceBenef1;
+	var expectedBalanceBenef2;
+
 	var amount = 1000000;
 	it("donate " + amount + " wei", function() {
 		return DonationV2.deployed().then(function(instance){		
@@ -63,10 +69,12 @@ contract("DonationV2", function(accounts) {
 			return	web3.eth.getBalance(ADDR_BENEF1);
 		}).then(function(balance){ 
 			console.log("benef1 balance:", balance.toNumber());
+			balanceBenef1 = balance.toNumber();
 		}).then(function(){
 			return	web3.eth.getBalance(ADDR_BENEF2);
 		}).then(function(balance){ 
 			console.log("benef2 balance:", balance.toNumber());
+			balanceBenef2 = balance.toNumber();
 		}).then(function(){
 			console.log("Attempt to flush contrat balance");
 			return don.flush({gas: 200000, from: ADDR_DEPLOYER});
@@ -81,10 +89,14 @@ contract("DonationV2", function(accounts) {
 			return	web3.eth.getBalance(ADDR_BENEF1);
 		}).then(function(balance){ 
 			console.log("benef1 balance:", balance.toNumber());
+			expectedBalanceBenef1 = balanceBenef1 + (amount/2);
+			assert.equal(balance.toNumber(), expectedBalanceBenef1, "contract balance should be " + expectedBalanceBenef1);
 		}).then(function(){
 			return	web3.eth.getBalance(ADDR_BENEF2);
 		}).then(function(balance){ 
 			console.log("benef2 balance:", balance.toNumber());
+			expectedBalanceBenef2 = balanceBenef2 + (amount/2);
+			assert.equal(balance.toNumber(), expectedBalanceBenef2, "contract balance should be " + expectedBalanceBenef2);
 		});
 		// .catch(function(err){
 		// 	console.error("ERROR:", err);
