@@ -27,8 +27,8 @@ module.exports = function(deployer) {
         return def.promise;
     };
 
-    deployDonation()
-    .catch(function(err) {
-        console.log('  >> ' + err);
-    });
+    //deployDonation()
+    //.catch(function(err) {
+    //    console.log('  >> ' + err);
+    //});
 };

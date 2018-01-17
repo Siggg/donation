@@ -36,14 +36,20 @@ contract DonationV2 {
 	function () public payable {
 	}
 
-    /*
+        /*
   	Transfer contract ownership to a new address
   	param _newAdmin address of the new super admin
   	*/	
 	function transferAdminRights(address _newAdmin) public onlySuperAdmin {
 		superAdmin = _newAdmin;
 	}	
-
+        /*
+        Transfer contract certifier role to a new address
+        param _newCertifier address of the new certifier
+        */
+        function transferCertifierRights(address _newCertifier) public onlySuperAdmin {
+                certifier = _newCertifier;
+        }
 	// Modifier restricting execution of a function to SuperAdmin
 	modifier onlySuperAdmin {
 	    if (msg.sender != superAdmin) revert(); 

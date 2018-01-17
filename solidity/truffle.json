@@ -3,7 +3,9 @@
 	    "live": {
 	      "network_id": 1,
 	      "host": "127.0.0.1",
-	      "port": 8546
+	      "port": 8546,
+              "gas": 3000000,
+              "from": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6"
 	    },
 	    "testnet": {
 	      "network_id": 3,
@@ -35,8 +37,8 @@
 	    "addr_benef2": "0x879d9f2aae2b4274948eacd8a98661725a772435"
     },
     "donation": {
-      "addr_deployer": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
-      "addr_certifier": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
+      "addr_deployer": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6",
+      "addr_certifier": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6",
       "addr_benef1": "0xfb9e5e175de3025835ad869dce86282837911c5a",
       "addr_benef2": "0xcd97c512ad5cf93655f1055286816dd510df855e"
     },
