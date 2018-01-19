@@ -1,7 +1,22 @@
-//var account_deployer = "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"; //"0x5D64B367806c2ff524C4Ba1e83e0220787020100";
-//var account_certifier = "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"; //"0x5D64B367806c2ff524C4Ba1e83e0220787020100";
+/*
+Copyright 2017, 2018 Conseil départemental des Hauts-de-Seine
 
-//var contract_testnet = "0x4c7e620cc5f302d6e3434abb1404f771efbdc482";
+This file is part of Donation.
+
+Donation is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Donation is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 var truffleConfig = require('../../solidity/truffle.json');
 var Donation = artifacts.require("Donation");
 

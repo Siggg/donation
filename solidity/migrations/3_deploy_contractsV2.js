@@ -1,9 +1,26 @@
+/*
+Copyright 2017, 2018 Conseil départemental des Hauts-de-Seine
+
+This file is part of Donation.
+
+Donation is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Donation is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 var q = require('../../node_modules/q');
 var fs = require('../../node_modules/fs-extra/lib');
 var Web3 = require('../../node_modules/web3');
 var truffleConfig = require('../../solidity/truffle.json');
-
-//var DONATION = require('../../solidity/build/contracts/Donation.sol.js');
 
 var DonationV2 = artifacts.require("DonationV2");
 
@@ -27,29 +44,8 @@ module.exports = function(deployer) {
         });
         return def.promise;
     };
-      
-    // var writeDeployConfigFile = function() {
-    //     var def = q.defer();
-    //     // Once everything is deployed, creates a file with contract addresses
-    //     if (fs != undefined) {
-    //         fs.writeFileSync(
-    //             __dirname + '/../../server/config/deploy-config.json', 
-    //             JSON.stringify({
-    //                'DONATION': adddonation,
-    //                'DONATION_abi': DONATION.all_networks.default.abi,
-    //             }),
-    //             'utf-8'
-    //         );
-    //         def.resolve();
-    //     } else {
-    //         def.reject('fs is undefined');
-    //     }
-    //     return def.promise;
-    // };
 
     deployDonationV2()
-
-//    .then(writeDeployConfigFile)
     .catch(function(err) {
         console.log('  >> ' + err);
     });

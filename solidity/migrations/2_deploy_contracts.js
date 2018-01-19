@@ -1,3 +1,22 @@
+/*
+Copyright 2017, 2018 Conseil départemental des Hauts-de-Seine
+
+This file is part of Donation.
+
+Donation is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Donation is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 var q = require('../../node_modules/q');
 var fs = require('../../node_modules/fs-extra/lib');
 var Web3 = require('../../node_modules/web3');
