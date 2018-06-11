@@ -58,10 +58,10 @@ contract DonationV2 {
         /*
   	Transfer contract ownership to a new address
   	param _newAdmin address of the new super admin
-  	*/	
+  	*/
 	function transferAdminRights(address _newAdmin) public onlySuperAdmin {
 		superAdmin = _newAdmin;
-	}	
+	}
         /*
         Transfer contract certifier role to a new address
         param _newCertifier address of the new certifier
@@ -71,28 +71,25 @@ contract DonationV2 {
         }
 	// Modifier restricting execution of a function to SuperAdmin
 	modifier onlySuperAdmin {
-	    if (msg.sender != superAdmin) revert(); 
+	    if (msg.sender != superAdmin) revert();
 	    _;
 	}
-    
+
     /*
     Kills the contract (Action reserved to super admin)
     */
     function kill() public onlySuperAdmin {
-        selfdestruct(this); 
+        selfdestruct(this);
     }
 
 	// Modifier restricting execution of a function to Certifier
 	modifier onlyCertifier {
-	    if (msg.sender != certifier) revert(); 
+	    if (msg.sender != certifier) revert();
 	    _;
 	}
 
 	// Before adding a new beneficiary, the contrat spread its balance among existing beneficiaries
 	function registerBeneficiary(address _beneficiary) public onlyCertifier {
-		if (this.balance > 0) {
-			flush();
-		}
 		if (beneficiaries[_beneficiary].isSet == false) {
 			// create new beneficiary
 			beneficiaries[_beneficiary] = BeneficiaryData(true, true, 0);
@@ -109,9 +106,6 @@ contract DonationV2 {
 
 	// Before removing an existing beneficiary, the contrat spread its balance among existing beneficiaries
 	function unregisterBeneficiary(address _beneficiary) public onlyCertifier {
-		if (this.balance > 0) {
-			flush();
-		}
 		if (beneficiaries[_beneficiary].isSet) {
 			if (beneficiaries[_beneficiary].authorized == true) {
 				// desactivate beneficiary
@@ -125,7 +119,7 @@ contract DonationV2 {
 		return beneficiaryCount;
 	}
 
-	// Paginate search of beneficiaries that has been registered at least once 
+	// Paginate search of beneficiaries that has been registered at least once
 	// starting from startIndex and returns 100 max beneficiaries.
 	function getPaginateBeneficiaries(uint startIndex, uint size) public constant returns (address[100]) {
 		address[100] memory res;
@@ -138,13 +132,13 @@ contract DonationV2 {
 			size = beneficiaryCountMax - startIndex;
 		}
 		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex+i];	
+			address benef = beneficiaryPositions[startIndex+i];
 			res[i] = benef;
 		}
 		return res;
 	}
 
-	// Paginate search of beneficiaries that has been registered at least once 
+	// Paginate search of beneficiaries that has been registered at least once
 	// starting from startIndex and returns 100 max beneficiaries.
 	function getPaginateActiveBeneficiaries(uint startIndex, uint size) public constant returns (address[100]) {
 		address[100] memory res;
@@ -158,8 +152,8 @@ contract DonationV2 {
 			size = beneficiaryCountMax - startIndex;
 		}
 		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex+i];	
-			if (beneficiaries[benef].authorized) {		
+			address benef = beneficiaryPositions[startIndex+i];
+			if (beneficiaries[benef].authorized) {
 				res[counter] = benef;
 				counter++;
 			}
@@ -174,14 +168,14 @@ contract DonationV2 {
 		uint countBenef = beneficiaryCount;
 		uint balance = this.balance;
 		uint dust = balance % countBenef;
-		uint realAmount = balance - dust; 
+		uint realAmount = balance - dust;
 
 		evtSpread(realAmount, countBenef);
-		
+
 		uint part = realAmount / countBenef;
 		for (uint i = 0; i < beneficiaryCountMax; i++) {
-			address benef = beneficiaryPositions[i];	
-			if (beneficiaries[benef].authorized) {		
+			address benef = beneficiaryPositions[i];
+			if (beneficiaries[benef].authorized) {
 				if (!benef.send(part)) {
 					evtSendFailed(benef, part);
 				}
