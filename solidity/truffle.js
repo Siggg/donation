@@ -16,4 +16,40 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-module.exports = require("./truffle.json");
+
+var HDWalletProvider = require("truffle-hdwallet-provider");
+var mnemonic = "door sadness shallow hire fame lesson wonder scan donate caution apple chicken";
+
+// Allows us to use ES6 in our migrations and tests.
+require('babel-register')
+
+module.exports = {
+  networks: {
+    mainnet: {
+      provider:  function() {
+        return new HDWalletProvider(mnemonic, "https://mainnet.infura.io/")
+      },
+      network_id: 1
+    },
+    ropsten: {
+      provider: function() {
+        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/")
+      },
+      network_id: 3
+    },
+    development: {
+     host: "localhost",
+     port: 8545,
+     network_id: "*",
+     gas: 4712387
+   }
+  },
+  rpc: {
+        host: 'localhost',
+        post:8080
+   },
+  optimizer: {
+    enabled: true,
+    runs: 200
+  }
+};

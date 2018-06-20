@@ -1,57 +1,33 @@
 {
-   "networks": {
-	    "live": {
-	      "network_id": 1,
-	      "host": "127.0.0.1",
-	      "port": 8546,
-              "gas": 3000000,
-              "from": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6"
-	    },
-	    "testnet": {
-	      "network_id": 3,
-	      "host": "127.0.0.1",
-	      "port": 8545,
-              "gas": 3000000,
-              "from": "0x5d64b367806c2ff524c4ba1e83e0220787020100"
-	    },
-	    "development": {
-	      "host": "localhost",
-	      "port": 8545,
-	      "gas": 4712388,
-	      "gasPrice": 100000000000,
-	      "from": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
-	      "network_id": "*"
-	    }	
-    },
     "rpc": {
       "host": "localhost",
       "port": 8545,
       "gas": 4500000,
       "gasPrice": 100000000000,
-      "from": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285"
+      "from": "0xd23836a0b95422f5f6075a59a907ef81eea89d1c"
     },
     "donation_testnet": {
-      "addr_deployer": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
-      "addr_certifier": "0x5d64b367806c2ff524c4ba1e83e0220787020100",
-	    "addr_benef1": "0xbe9621a82c923f4e762b9a980e0df59f28d86db2",
-	    "addr_benef2": "0x879d9f2aae2b4274948eacd8a98661725a772435"
+      "addr_deployer": "0xd23836a0b95422f5f6075a59a907ef81eea89d1c",
+      "addr_certifier": "0xaf13f12ebe00cd02f486e000927408148e768802",
+	    "addr_benef1": "0x86dda0810bdfae8d9eced3618ef2c219bc7b05a7",
+	    "addr_benef2": "0x0775280793cd35169336466ac020a495c38ff1c8"
     },
     "donation_prod": {
-      "addr_deployer": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6",
-      "addr_certifier": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6",
-      "addr_benef1": "0xfb9e5e175de3025835ad869dce86282837911c5a",
-      "addr_benef2": "0xcd97c512ad5cf93655f1055286816dd510df855e"
+      "addr_deployer": "0xd23836a0b95422f5f6075a59a907ef81eea89d1c",
+      "addr_certifier": "0xaf13f12ebe00cd02f486e000927408148e768802",
+	    "addr_benef1": "0x86dda0810bdfae8d9eced3618ef2c219bc7b05a7",
+	    "addr_benef2": "0x0775280793cd35169336466ac020a495c38ff1c8"
     },
     "donation_dev": {
-      "addr_deployer": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
-      "addr_certifier": "0x2f53660e9e3a0ab9f8023b0f3464e7f6e7b06285",
-      "addr_benef1": "0xfb9e5e175de3025835ad869dce86282837911c5a",
-      "addr_benef2": "0xcd97c512ad5cf93655f1055286816dd510df855e"
+      "addr_deployer": "0xd23836a0b95422f5f6075a59a907ef81eea89d1c",
+      "addr_certifier": "0xaf13f12ebe00cd02f486e000927408148e768802",
+	    "addr_benef1": "0x86dda0810bdfae8d9eced3618ef2c219bc7b05a7",
+	    "addr_benef2": "0x0775280793cd35169336466ac020a495c38ff1c8"
     },
     "donation": {
-      "addr_deployer": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6",
-      "addr_certifier": "0xfe3925a85b04be979ef5c6b1bad5361dc30d89b6",
-      "addr_benef1": "0xfb9e5e175de3025835ad869dce86282837911c5a",
-      "addr_benef2": "0xcd97c512ad5cf93655f1055286816dd510df855e"
+      "addr_deployer": "0xd23836a0b95422f5f6075a59a907ef81eea89d1c",
+      "addr_certifier": "0xaf13f12ebe00cd02f486e000927408148e768802",
+	    "addr_benef1": "0x86dda0810bdfae8d9eced3618ef2c219bc7b05a7",
+	    "addr_benef2": "0x0775280793cd35169336466ac020a495c38ff1c8"
     }
 }

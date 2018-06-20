@@ -16,29 +16,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 var q = require('../../node_modules/q');
 var fs = require('../../node_modules/fs-extra/lib');
 var Web3 = require('../../node_modules/web3');
 var truffleConfig = require('../../solidity/truffle.json');
 
-var DONATION = require('../../solidity/build/contracts/Donation.json');
-var Donation = artifacts.require("Donation");
-
+var DonationV2 = artifacts.require("DonationV2");
 
 module.exports = function(deployer) {
-   var ADDR_DEPLOYER = truffleConfig.donation.addr_deployer;
-   var ADDR_CERTIFIER = truffleConfig.donation.addr_certifier;
- 
-   var adddonation;
-   var donation;
 
-    var deployDonation = function() {
+  var ADDR_DEPLOYER = truffleConfig.donation_dev.addr_deployer;
+  var ADDR_CERTIFIER = truffleConfig.donation_dev.addr_deployer;
+
+   var adddonationV2;
+   var donationV2;
+
+   console.log(ADDR_DEPLOYER);
+   var deployDonationV2 = function() {
         var def = q.defer();
-        deployer.deploy(Donation, ADDR_CERTIFIER, { "gas": 3000000, "from": ADDR_DEPLOYER }).then(function() {
-            adddonation = Donation.address;
-            donation = Donation.at(adddonation);
-            console.log('  >> Donation deployed at address ', adddonation);
+        deployer.deploy(DonationV2, ADDR_CERTIFIER, {from: ADDR_DEPLOYER}).then(function() {
+            adddonationV2 = DonationV2.address;
+            donationV2 = DonationV2.at(adddonationV2);
+            console.log('  >> DonationV2 deployed at address ', adddonationV2);
             def.resolve();
         }, function(err) {
             def.reject(err);
@@ -46,8 +45,8 @@ module.exports = function(deployer) {
         return def.promise;
     };
 
-    //deployDonation()
-    //.catch(function(err) {
-    //    console.log('  >> ' + err);
-    //});
+    deployDonationV2()
+    .catch(function(err) {
+        console.log('  >> err :' + err);
+      });
 };
