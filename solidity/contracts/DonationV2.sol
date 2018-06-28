@@ -35,9 +35,10 @@ contract DonationV2 {
 	uint beneficiaryCountMax;
 	// storage of beneficiaries
 	mapping (uint => address) beneficiaryPositions;
-
 	struct BeneficiaryData {
+		bool isSet;
 		bool active;
+		bool paid;
 	}
 	mapping (address => BeneficiaryData) beneficiaries;
 
@@ -47,7 +48,7 @@ contract DonationV2 {
 	event evtSpread(uint amount, uint nbBenef);
 
 	// constructor
-	constructor (address _certifier) public {
+	constructor(address _certifier) public {
 		superAdmin = msg.sender;
 		certifier = _certifier;
 		beneficiaryCount = 0;
@@ -74,8 +75,8 @@ contract DonationV2 {
         }
 	// Modifier restricting execution of a function to SuperAdmin
 	modifier onlySuperAdmin {
-		require(msg.sender == superAdmin);
-	  _;
+	    require(msg.sender == superAdmin);
+	    _;
 	}
 
     /*
@@ -87,30 +88,36 @@ contract DonationV2 {
 
 	// Modifier restricting execution of a function to Certifier
 	modifier onlyCertifier {
-		require(msg.sender == certifier);
-	  _;
+	    require(msg.sender == certifier);
+	    _;
 	}
 
 	// Before adding a new beneficiary, the contrat spread its balance among existing beneficiaries
 	function registerBeneficiary(address _beneficiary) public onlyCertifier {
-		if (beneficiaries[_beneficiary].active == false) {
+		if (beneficiaries[_beneficiary].isSet == false) {
 			// create new beneficiary
-			beneficiaries[_beneficiary] = BeneficiaryData(true);
+			beneficiaries[_beneficiary] = BeneficiaryData(true, true, false);
 			beneficiaryPositions[beneficiaryCountMax] = _beneficiary;
-			beneficiaryCount.add(1);
-			beneficiaryCountMax.add(1);
+			beneficiaryCount++;
+			beneficiaryCountMax++;
 		}
-		else if (beneficiaries[_beneficiary].active == true) {
+		else if (beneficiaries[_beneficiary].active == false) {
 			// reactivate existing beneficiary
-			beneficiaryCount.add(1);
+			beneficiaries[_beneficiary].active = true;
+			beneficiaries[_beneficiary].paid = false;
+			beneficiaryCount++;
 		}
 	}
 
 	// Before removing an existing beneficiary, the contrat spread its balance among existing beneficiaries
 	function unregisterBeneficiary(address _beneficiary) public onlyCertifier {
-		if (beneficiaries[_beneficiary].active) {
-			beneficiaries[_beneficiary].active = false;
-			beneficiaryCount.sub(1);
+		if (beneficiaries[_beneficiary].isSet) {
+			if (beneficiaries[_beneficiary].active == true) {
+				// desactivate beneficiary
+				beneficiaries[_beneficiary].active = false;
+				beneficiaries[_beneficiary].paid = false;
+				beneficiaryCount--;
+			}
 		}
 	}
 
@@ -127,11 +134,11 @@ contract DonationV2 {
 		if (startIndex >= beneficiaryCountMax) {
 			return res;
 		}
-		if (startIndex.add(size) > beneficiaryCountMax) {
-			size = beneficiaryCountMax.sub(startIndex);
+		if (startIndex + size > beneficiaryCountMax) {
+			size = beneficiaryCountMax - startIndex;
 		}
 		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex.add(i)];
+			address benef = beneficiaryPositions[startIndex+i];
 			res[i] = benef;
 		}
 		return res;
@@ -147,42 +154,60 @@ contract DonationV2 {
 		if (startIndex >= beneficiaryCountMax) {
 			return res;
 		}
-		if (startIndex.add(size) > beneficiaryCountMax) {
-			size = beneficiaryCountMax.sub(startIndex);
+		if (startIndex + size > beneficiaryCountMax) {
+			size = beneficiaryCountMax - startIndex;
 		}
 		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex.add(i)];
+			address benef = beneficiaryPositions[startIndex+i];
 			if (beneficiaries[benef].active) {
 				res[counter] = benef;
-				counter.add(1);
+				counter++;
 			}
 		}
 		return res;
 	}
 
-	// Spread balance among beneficiaries
-	function flush() public onlyCertifier {
-		require(address(this).balance > 0);
-		require(beneficiaryCount > 0);
-		uint countBenef = beneficiaryCount;
-		uint balance = address(this).balance;
-		uint dust = balance % countBenef;
-		uint realAmount = balance.sub(dust);
 
-		emit evtSpread(realAmount, countBenef);
+function flush(uint256 _value) public onlyCertifier {
+	require(address(this).balance >= _value);
+	require(beneficiaryCount > 0);
 
-		uint part = realAmount.div(countBenef);
-		for (uint i = 0; i < beneficiaryCountMax; i++) {
+	uint balance = address(this).balance;
+	uint nbBenef = balance.div(_value);
+	uint counter = 0;
+
+	// parcours de la liste des beneficiaires
+	for(uint i = 0; i < beneficiaryCountMax; i++){
+		// check si le nombre exacte des bénéficiaires à payer est atteint
+		if(counter != nbBenef && counter < nbBenef){
 			address benef = beneficiaryPositions[i];
-			if (beneficiaries[benef].active) {
-				if (!benef.send(part)) {
-					emit evtSendFailed(benef, part);
-				}
-				else {
-					emit evtSendSuccess(benef, part);
+			// Si le bénéficiaire est payé ou le bénéficiaire n'est pas actif, on passe au suivant
+			if(beneficiaries[benef].paid == true || beneficiaries[benef].active == false){
+				i++;
+			}
+			else{
+				// on paye le bénéficiaire
+				benef.transfer(_value);
+				emit evtSendSuccess(benef, _value);
+				counter ++;
+				beneficiaries[benef].paid = true;
+				if(i == beneficiaryCountMax.sub(1) && counter < nbBenef){
+					i = 0;
+					resetPayment();
 				}
 			}
 		}
-
+		else{
+			// les bénéficiaires sont payés, on force la sortie de la boucle
+			i = beneficiaryCountMax;
+		}
 	}
+}
+
+function resetPayment() internal{
+	for(uint i = 0; i < beneficiaryCountMax; i++){
+		address benef = beneficiaryPositions[i];
+		beneficiaries[benef].paid = false;
+	}
+}
 }

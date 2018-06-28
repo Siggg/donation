@@ -22,7 +22,10 @@
       "addr_deployer": "0xd23836a0b95422f5f6075a59a907ef81eea89d1c",
       "addr_certifier": "0xaf13f12ebe00cd02f486e000927408148e768802",
 	    "addr_benef1": "0x86dda0810bdfae8d9eced3618ef2c219bc7b05a7",
-	    "addr_benef2": "0x0775280793cd35169336466ac020a495c38ff1c8"
+	    "addr_benef2": "0x9de9eda2dfe06d77886b34d2f24964d05b38f74f",
+      "addr_benef3": "0x0775280793cd35169336466ac020a495c38ff1c8",
+      "addr_benef4": "0x7fb7fdbe27ec8cd90ed2fa3acb231ac480bc8e34",
+      "addr_benef5": "0x2fa93b985cd88b7e0e5402c4823b3eee9ba50428"
     },
     "donation": {
       "addr_deployer": "0xd23836a0b95422f5f6075a59a907ef81eea89d1c",

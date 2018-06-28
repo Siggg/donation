@@ -21,8 +21,10 @@ var HDWalletProvider = require("truffle-hdwallet-provider");
 var mnemonic = "door sadness shallow hire fame lesson wonder scan donate caution apple chicken";
 
 // Allows us to use ES6 in our migrations and tests.
-require('babel-register')
-
+require('babel-register')({
+  ignore: /node_modules\/(?!test\/helpers)/
+});
+require('babel-polyfill');
 module.exports = {
   networks: {
     mainnet: {
@@ -35,11 +37,12 @@ module.exports = {
       provider: function() {
         return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/")
       },
-      network_id: 3
+      network_id: 3,
+      gas: 4712387
     },
     development: {
      host: "localhost",
-     port: 8545,
+     port: 7545,
      network_id: "*",
      gas: 4712387
    }
