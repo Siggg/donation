@@ -111,14 +111,10 @@ contract DonationV2 {
 
 	// Before removing an existing beneficiary, the contrat spread its balance among existing beneficiaries
 	function unregisterBeneficiary(address _beneficiary) public onlyCertifier {
-		if (beneficiaries[_beneficiary].isSet) {
-			if (beneficiaries[_beneficiary].active == true) {
-				// desactivate beneficiary
-				beneficiaries[_beneficiary].active = false;
-				beneficiaries[_beneficiary].paid = false;
-				beneficiaryCount--;
-			}
-		}
+		require(beneficiaries[_beneficiary].isSet == true);
+		beneficiaries[_beneficiary].active = false;
+		beneficiaries[_beneficiary].paid = false;
+		beneficiaryCount--;
 	}
 
 	function getBeneficiaryCount() public view returns (uint) {
