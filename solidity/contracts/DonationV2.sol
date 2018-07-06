@@ -79,13 +79,6 @@ contract DonationV2 {
 	    _;
 	}
 
-    /*
-    Kills the contract (Action reserved to super admin)
-    */
-    function kill() public onlySuperAdmin {
-        selfdestruct(this);
-    }
-
 	// Modifier restricting execution of a function to Certifier
 	modifier onlyCertifier {
 	    require(msg.sender == certifier);
@@ -164,7 +157,7 @@ contract DonationV2 {
 	}
 
 
-function flush(uint256 _value) public onlyCertifier {
+function distribute(uint256 _value) public onlyCertifier {
 	require(address(this).balance >= _value);
 	require(beneficiaryCount > 0);
 
@@ -188,7 +181,6 @@ function flush(uint256 _value) public onlyCertifier {
 				counter ++;
 				beneficiaries[benef].paid = true;
 				if(i == beneficiaryCountMax.sub(1) && counter < nbBenef){
-					i = 0;
 					resetPayment();
 				}
 			}

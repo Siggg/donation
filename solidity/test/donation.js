@@ -43,35 +43,35 @@ contract('DonationV2', function(accounts) {
     donation = contracts.donation;
   });
 
-  describe('Try to make a flush when beneficiaries count == 0', async function () {
+  describe('Try to make a distribute when beneficiaries count == 0', async function () {
     var amount = web3.toWei('1', 'ether');
     var seuil = web3.toWei('0.25', 'ether');
     it("donate " + amount + " wei", async function() {
       await donation.sendTransaction({value: amount, from: ADDR_DEPLOYER, to: donation.address});
     });
-    it('it rejects a flush when beneficiaries count == 0', async function() {
-      await assertRevert(donation.flush(seuil,{ from: ADDR_CERTIFIER}));
+    it('it rejects a distributewhen beneficiaries count == 0', async function() {
+      await assertRevert(donation.distribute(seuil,{ from: ADDR_CERTIFIER}));
     });
   });
 
-  describe('Register a beneficiary account and try to make a flush with a balance == 0', async function () {
+  describe('Register a beneficiary account and try to make a distribute with a balance == 0', async function () {
     var seuil = web3.toWei('0.25', 'ether');
     it('it register an account', async function () {
       await donation.registerBeneficiary(ADDR_BENEF1, { from: ADDR_CERTIFIER});
     });
     it('it rejects a flush', async function() {
-      await assertRevert(donation.flush(seuil,{ from: ADDR_CERTIFIER}));
+      await assertRevert(donation.distribute(seuil,{ from: ADDR_CERTIFIER}));
     });
   });
 
-  describe('Try to make a flush from another account != ADDR_CERTIFIER', async function () {
+  describe('Try to make a distribute from another account != ADDR_CERTIFIER', async function () {
     var amount = web3.toWei('1', 'ether');
     var seuil = web3.toWei('0.25', 'ether');
     it("donate " + amount + " wei", async function() {
       await donation.sendTransaction({value: amount, from: ADDR_DEPLOYER, to: donation.address});
     });
-    it('it rejects a flush called by another address != ADDR_CERTIFIER', async function() {
-      await assertRevert(donation.flush(seuil, { from: ADDR_BENEF1}));
+    it('it rejects a distributecalled by another address != ADDR_CERTIFIER', async function() {
+      await assertRevert(donation.distribute(seuil, { from: ADDR_BENEF1}));
     });
   });
 
@@ -94,15 +94,24 @@ contract('DonationV2', function(accounts) {
     var amount = web3.toWei('1', 'ether');
     it("donate " + amount + " wei", async function() {
       await donation.sendTransaction({value: amount, from: ADDR_DEPLOYER, to: donation.address});
+      var balance = await web3.eth.getBalance(donation.address);
+      assert.equal(balance.toNumber(), amount, "contract balance should be 1 ether");
     });
    });
 
    describe('Unregister an existing account', async function () {
      it('it register & unregister a beneficiary', async function () {
        console.log("register beneficiary");
+       var count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+       assert.equal(count.toNumber(),0, "beneficiaries count should be 0");
+
        await donation.registerBeneficiary(ADDR_BENEF1, { from: ADDR_CERTIFIER});
-       console.log("unregister beneficiary");
+       count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+       assert.equal(count.toNumber(),1, "beneficiaries count should be 1");
+
        await donation.unregisterBeneficiary(ADDR_BENEF1, { from: ADDR_CERTIFIER});
+       count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+       assert.equal(count.toNumber(),0, "beneficiaries count should be 0");
      });
    });
 
@@ -110,21 +119,29 @@ contract('DonationV2', function(accounts) {
   describe('Test donation', async function () {
     var amount = web3.toWei('1', 'ether');
     var seuil = web3.toWei('0.25', 'ether');
-    it('register beneficiaries account and make a flush ', async function () {
-      console.log("register 1 beneficiary");
+    it('register beneficiaries account and make a distribute', async function () {
       await donation.registerBeneficiary(ADDR_BENEF1, { from: ADDR_CERTIFIER});
-      console.log("register 2 beneficiary");
+      var count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+      assert.equal(count.toNumber(),1, "beneficiaries count should be 1");
+
       await donation.registerBeneficiary(ADDR_BENEF2, { from: ADDR_CERTIFIER});
-      console.log("register 3 beneficiary");
+      count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+      assert.equal(count.toNumber(),2, "beneficiaries count should be 2");
+
       await donation.registerBeneficiary(ADDR_BENEF3, { from: ADDR_CERTIFIER});
-      console.log("register 4 beneficiary");
+      count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+      assert.equal(count.toNumber(),3, "beneficiaries count should be 3");
+
       await donation.registerBeneficiary(ADDR_BENEF4, { from: ADDR_CERTIFIER});
-      console.log("register 5 beneficiary");
+      count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+      assert.equal(count.toNumber(),4, "beneficiaries count should be 4");
+
       await donation.registerBeneficiary(ADDR_BENEF5, { from: ADDR_CERTIFIER});
-      console.log("donate " + amount + " wei");
+      count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
+      assert.equal(count.toNumber(),5, "beneficiaries count should be 5");
+
       await donation.sendTransaction({value: amount, from: ADDR_DEPLOYER, to: donation.address});
-      console.log("make a flush");
-      await donation.flush(seuil, {from: ADDR_CERTIFIER});
+      await donation.distribute(seuil, {from: ADDR_CERTIFIER});
     });
   });
 });
