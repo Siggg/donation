@@ -1,6 +1,29 @@
-pragma solidity ^0.4.18;
+/*
+Copyright 2017, 2018 Conseil départemental des Hauts-de-Seine
+
+This file is part of Donation.
+
+Donation is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Donation is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+pragma solidity ^0.4.24;
+
+import "./SafeMath.sol";
 
 contract Donation {
+	using SafeMath for uint256;
+
 	// address owning the contract
 	address superAdmin;
 
@@ -13,90 +36,87 @@ contract Donation {
 	// storage of beneficiaries
 	mapping (uint => address) beneficiaryPositions;
 	struct BeneficiaryData {
-		bool authorized;
 		bool isSet;
-		uint pendingReturn;
+		bool active;
+		bool paid;
 	}
 	mapping (address => BeneficiaryData) beneficiaries;
 
 	// Events
-	event evtDonate(address donator, uint amount);
 	event evtSendFailed(address benef, uint amount);
 	event evtSendSuccess(address benef, uint amount);
-
-	event evtGive(address donator, uint amount);
+	event evtSpread(uint amount, uint nbBenef);
 
 	// constructor
-	function Donation(address _certifier) public {
+	constructor(address _certifier) public {
 		superAdmin = msg.sender;
 		certifier = _certifier;
 		beneficiaryCount = 0;
 		beneficiaryCountMax = 0;
 	}
 
+	// Allows to give wei to this contract via fallback function
 	function () public payable {
-		revert();
 	}
 
-    /*
+        /*
   	Transfer contract ownership to a new address
   	param _newAdmin address of the new super admin
-  	*/	
+  	*/
 	function transferAdminRights(address _newAdmin) public onlySuperAdmin {
 		superAdmin = _newAdmin;
-	}	
-
+	}
+        /*
+        Transfer contract certifier role to a new address
+        param _newCertifier address of the new certifier
+        */
+        function transferCertifierRights(address _newCertifier) public onlySuperAdmin {
+                certifier = _newCertifier;
+        }
 	// Modifier restricting execution of a function to SuperAdmin
 	modifier onlySuperAdmin {
-	    if (msg.sender != superAdmin) revert(); 
+	    require(msg.sender == superAdmin);
 	    _;
 	}
-    
-    /*
-    Kills the contract (Action reserved to super admin)
-    */
-    function kill() public onlySuperAdmin {
-        selfdestruct(this); 
-    }
 
 	// Modifier restricting execution of a function to Certifier
 	modifier onlyCertifier {
-	    if (msg.sender != certifier) revert(); 
+	    require(msg.sender == certifier);
 	    _;
 	}
 
+	// Before adding a new beneficiary, the contrat spread its balance among existing beneficiaries
 	function registerBeneficiary(address _beneficiary) public onlyCertifier {
 		if (beneficiaries[_beneficiary].isSet == false) {
 			// create new beneficiary
-			beneficiaries[_beneficiary] = BeneficiaryData(true, true, 0);
+			beneficiaries[_beneficiary] = BeneficiaryData(true, true, false);
 			beneficiaryPositions[beneficiaryCountMax] = _beneficiary;
 			beneficiaryCount++;
 			beneficiaryCountMax++;
 		}
-		else if (beneficiaries[_beneficiary].authorized == false) {
+		else if (beneficiaries[_beneficiary].active == false) {
 			// reactivate existing beneficiary
-			beneficiaries[_beneficiary].authorized = true;
+			beneficiaries[_beneficiary].active = true;
+			beneficiaries[_beneficiary].paid = false;
 			beneficiaryCount++;
 		}
 	}
 
+	// Before removing an existing beneficiary, the contrat spread its balance among existing beneficiaries
 	function unregisterBeneficiary(address _beneficiary) public onlyCertifier {
-		if (beneficiaries[_beneficiary].isSet) {
-			if (beneficiaries[_beneficiary].authorized == true) {
-				// desactivate beneficiary
-				beneficiaries[_beneficiary].authorized = false;
-				beneficiaryCount--;
-			}
-		}
+		require(beneficiaries[_beneficiary].isSet == true);
+		beneficiaries[_beneficiary].active = false;
+		beneficiaries[_beneficiary].paid = false;
+		beneficiaryCount--;
 	}
 
-	function getBeneficiaryCount() public constant returns (uint) {
+	function getBeneficiaryCount() public view returns (uint) {
 		return beneficiaryCount;
 	}
 
-	// Paginate search of beneficiaries that has been registered at least once 
+	// Paginate search of beneficiaries that has been registered at least once
 	// starting from startIndex and returns 100 max beneficiaries.
-	function getPaginateBeneficiaries(uint startIndex, uint size) public constant returns (address[100]) {
+	function getPaginateBeneficiaries(uint startIndex, uint size) public view returns (address[100]) {
 		address[100] memory res;
 		if (size > 100)
 			size = 100;
@@ -107,15 +127,15 @@ contract Donation {
 			size = beneficiaryCountMax - startIndex;
 		}
 		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex+i];	
+			address benef = beneficiaryPositions[startIndex+i];
 			res[i] = benef;
 		}
 		return res;
 	}
 
-	// Paginate search of beneficiaries that has been registered at least once 
+	// Paginate search of beneficiaries that has been registered at least once
 	// starting from startIndex and returns 100 max beneficiaries.
-	function getPaginateActiveBeneficiaries(uint startIndex, uint size) public constant returns (address[100]) {
+	function getPaginateActiveBeneficiaries(uint startIndex, uint size) public view returns (address[100]) {
 		address[100] memory res;
 		uint counter = 0;
 		if (size > 100)
@@ -127,8 +147,8 @@ contract Donation {
 			size = beneficiaryCountMax - startIndex;
 		}
 		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex+i];	
-			if (beneficiaries[benef].authorized) {		
+			address benef = beneficiaryPositions[startIndex+i];
+			if (beneficiaries[benef].active) {
 				res[counter] = benef;
 				counter++;
 			}
@@ -136,71 +156,46 @@ contract Donation {
 		return res;
 	}
 
-	// (DIRECT TRANSFERT)
-	// Donation function that transfers wei amount among beneficiaries (evenly spread, dust of wei are returned to donator)
-	// msg.value contains the donation amount in wei
-	function donate() public payable {
-		if (msg.value <= 0) revert();
-		if (beneficiaryCount <= 0) revert();
-		uint countBenef = beneficiaryCount;
-		uint dust = msg.value % countBenef;
-		uint realAmount = msg.value - dust; 
 
-		evtDonate(msg.sender, realAmount);
-		
-		uint part = realAmount / countBenef;
-		for (uint i = 0; i < beneficiaryCountMax; i++) {
-			address benef = beneficiaryPositions[i];	
-			if (beneficiaries[benef].authorized) {		
-				if (!benef.send(part)) {
-					evtSendFailed(benef, part);
+function distribute(uint256 _value) public onlyCertifier {
+	require(address(this).balance >= _value);
+	require(beneficiaryCount > 0);
+
+	uint balance = address(this).balance;
+	uint nbBenef = balance.div(_value);
+	uint counter = 0;
+
+	// parcours de la liste des beneficiaires
+	for(uint i = 0; i < beneficiaryCountMax; i++){
+		// check si le nombre exacte des bénéficiaires à payer est atteint
+		if(counter != nbBenef && counter < nbBenef){
+			address benef = beneficiaryPositions[i];
+			// Si le bénéficiaire est payé ou le bénéficiaire n'est pas actif, on passe au suivant
+			if(beneficiaries[benef].paid == true || beneficiaries[benef].active == false){
+				i++;
+			}
+			else{
+				// on paye le bénéficiaire
+				benef.transfer(_value);
+				emit evtSendSuccess(benef, _value);
+				counter ++;
+				beneficiaries[benef].paid = true;
+				if(i == beneficiaryCountMax.sub(1) && counter < nbBenef){
+					resetPayment();
 				}
-				else {
-					evtSendSuccess(benef, part);
-				}
 			}
 		}
-
-		if (msg.sender.send(dust)) {
-
+		else{
+			// les bénéficiaires sont payés, on force la sortie de la boucle
+			i = beneficiaryCountMax;
 		}
 	}
+}
 
-	// (PROMISE/withdraW TRANSFERT)
-	// donate
-	function give() public payable {
-		if (msg.value <= 0) revert();
-		if (beneficiaryCount <= 0) revert();
-		uint countBenef = beneficiaryCount;
-		uint dust = msg.value % countBenef;
-		uint realAmount = msg.value - dust; 
-
-		evtGive(msg.sender, realAmount);
-
-		uint part = realAmount / countBenef;
-		for (uint i = 0; i < beneficiaryCountMax; i++) {
-			address benef = beneficiaryPositions[i];	
-			if (beneficiaries[benef].authorized) {		
-				beneficiaries[benef].pendingReturn += part;
-			}
-		}
-		if (!msg.sender.send(dust)) {
-
-		}
-
+function resetPayment() internal{
+	for(uint i = 0; i < beneficiaryCountMax; i++){
+		address benef = beneficiaryPositions[i];
+		beneficiaries[benef].paid = false;
 	}
-
-	// Withdraw due wei from contract 
-	function withdraw() public returns (bool) {
-		uint amount = beneficiaries[msg.sender].pendingReturn;
-		if (amount > 0){
-			beneficiaries[msg.sender].pendingReturn = 0;
-			if (!msg.sender.send(amount)) {
-				beneficiaries[msg.sender].pendingReturn = amount;
-				return false;
-			}
-		}
-		return true;
-	}
-
+}
 }
