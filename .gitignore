@@ -8,3 +8,4 @@ data/nodes
 data/keystore
 node_modules
 server/
+.babelrc

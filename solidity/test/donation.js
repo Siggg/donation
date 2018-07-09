@@ -1,4 +1,4 @@
-/*
+Donation/*
 Copyright 2017, 2018 Conseil départemental des Hauts-de-Seine
 
 This file is part of Donation.
@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 import assertRevert from './helpers/assertRevert';
 var truffleConfig = require('../../solidity/truffle.json');
-var DonationV2 = artifacts.require("DonationV2");
+var Donation = artifacts.require("Donation");
 
 var ADDR_DEPLOYER = truffleConfig.donation_dev.addr_deployer;
 var ADDR_CERTIFIER = truffleConfig.donation_dev.addr_deployer;
@@ -30,11 +30,11 @@ var ADDR_BENEF5 = truffleConfig.donation_dev.addr_benef5;
 
 
 var don;
-contract('DonationV2', function(accounts) {
+contract('Donation', function(accounts) {
   let donation;
 
   async function setupContracts() {
-    const donation = await DonationV2.new(ADDR_CERTIFIER,{from : ADDR_DEPLOYER});
+    const donation = await Donation.new(ADDR_CERTIFIER,{from : ADDR_DEPLOYER});
     return {donation}
   }
 
@@ -119,6 +119,9 @@ contract('DonationV2', function(accounts) {
   describe('Test donation', async function () {
     var amount = web3.toWei('1', 'ether');
     var seuil = web3.toWei('0.25', 'ether');
+    var newBalance = web3.toWei('100.25', 'ether');
+    var oldBalance = web3.toWei('100', 'ether');
+
     it('register beneficiaries account and make a distribute', async function () {
       await donation.registerBeneficiary(ADDR_BENEF1, { from: ADDR_CERTIFIER});
       var count = await donation.getBeneficiaryCount.call({"from": ADDR_CERTIFIER});
@@ -142,6 +145,14 @@ contract('DonationV2', function(accounts) {
 
       await donation.sendTransaction({value: amount, from: ADDR_DEPLOYER, to: donation.address});
       await donation.distribute(seuil, {from: ADDR_CERTIFIER});
+
+
+      var balance4 = await web3.eth.getBalance(ADDR_BENEF4);
+      assert.equal(balance4.toNumber(), newBalance, "contract balance should be  100,25 ether");
+
+      var balance5 = await web3.eth.getBalance(ADDR_BENEF5);
+      assert.equal(balance5.toNumber(), oldBalance, "contract balance should be  100 ether");
+
     });
   });
 });

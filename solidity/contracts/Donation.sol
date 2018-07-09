@@ -21,7 +21,7 @@ pragma solidity ^0.4.24;
 
 import "./SafeMath.sol";
 
-contract DonationV2 {
+contract Donation {
 	using SafeMath for uint256;
 
 	// address owning the contract
