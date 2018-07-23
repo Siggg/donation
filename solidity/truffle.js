@@ -29,13 +29,13 @@ module.exports = {
   networks: {
     mainnet: {
       provider:  function() {
-        return new HDWalletProvider(mnemonic, "https://mainnet.infura.io/")
+        return new HDWalletProvider(mnemonic, "https://mainnet.infura.io/M61bTRVBOvpealSVYTxe")
       },
       network_id: 1
     },
     ropsten: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/")
+        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/M61bTRVBOvpealSVYTxe")
       },
       network_id: 3,
       gas: 4712387

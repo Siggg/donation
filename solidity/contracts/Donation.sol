@@ -19,183 +19,136 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pragma solidity ^0.4.24;
 
-import "./SafeMath.sol";
+import "./SafeMath.sol";		// update privileges
+
 
 contract Donation {
 	using SafeMath for uint256;
 
 	// address owning the contract
-	address superAdmin;
-
-	// address of the certifier
-	address certifier;
-
-	// counter of number of beneficiaries
-	uint beneficiaryCount;
-	uint beneficiaryCountMax;
-	// storage of beneficiaries
-	mapping (uint => address) beneficiaryPositions;
-	struct BeneficiaryData {
-		bool isSet;
-		bool active;
-		bool paid;
-	}
-	mapping (address => BeneficiaryData) beneficiaries;
-
+	address public superAdmin;
+	// address of the Privilege Request contract
+	address public privilegeRequest;
+	// counter of the number of beneficiaries
+	uint256 public beneficiaryCount;
+	// the fixed value to transfer when doing a distribution
+	uint256 public fixedValue = 0.01 ether;
+	// last timestamp of execution of the distribute function
+	uint256 public lastTimestamp = 1532004027;
+	// mapping of beneficiaries with privilege contract
+	mapping (address => address) public beneficiaries;
+	// storage of beneficiaries with positions
+	mapping (uint => address) public beneficiaryPositions;
+	// mapping of privileges contracts
+	mapping (address => bool) public privileges;
+	// storage of privileges balances
+	mapping (address => uint256) public privilegesBalances;
 	// Events
-	event evtSendFailed(address benef, uint amount);
 	event evtSendSuccess(address benef, uint amount);
-	event evtSpread(uint amount, uint nbBenef);
+
+	// Modifier restricting execution of a function to PrivilegeRequest contract
+	modifier onlyPrivilegeRequest {
+		require(msg.sender == privilegeRequest);
+		_;
+	}
+
+	// Modifier restricting execution of a function to superAdmin
+	modifier onlyAdmin {
+		require(msg.sender == superAdmin);
+		_;
+	}
 
 	// constructor
-	constructor(address _certifier) public {
+	constructor() public {
 		superAdmin = msg.sender;
-		certifier = _certifier;
 		beneficiaryCount = 0;
-		beneficiaryCountMax = 0;
 	}
 
 	// Allows to give wei to this contract via fallback function
 	function () public payable {
 	}
 
-        /*
-  	Transfer contract ownership to a new address
-  	param _newAdmin address of the new super admin
-  	*/
-	function transferAdminRights(address _newAdmin) public onlySuperAdmin {
-		superAdmin = _newAdmin;
-	}
-        /*
-        Transfer contract certifier role to a new address
-        param _newCertifier address of the new certifier
-        */
-        function transferCertifierRights(address _newCertifier) public onlySuperAdmin {
-                certifier = _newCertifier;
-        }
-	// Modifier restricting execution of a function to SuperAdmin
-	modifier onlySuperAdmin {
-	    require(msg.sender == superAdmin);
-	    _;
-	}
 
-	// Modifier restricting execution of a function to Certifier
-	modifier onlyCertifier {
-	    require(msg.sender == certifier);
-	    _;
-	}
-
-	// Before adding a new beneficiary, the contrat spread its balance among existing beneficiaries
-	function registerBeneficiary(address _beneficiary) public onlyCertifier {
-		if (beneficiaries[_beneficiary].isSet == false) {
-			// create new beneficiary
-			beneficiaries[_beneficiary] = BeneficiaryData(true, true, false);
-			beneficiaryPositions[beneficiaryCountMax] = _beneficiary;
-			beneficiaryCount++;
-			beneficiaryCountMax++;
-		}
-		else if (beneficiaries[_beneficiary].active == false) {
-			// reactivate existing beneficiary
-			beneficiaries[_beneficiary].active = true;
-			beneficiaries[_beneficiary].paid = false;
+	// Adding a new beneficiary
+	function registerBeneficiary(address _privilege, address _beneficiary) public onlyPrivilegeRequest {
+		if (privileges[_beneficiary] == false) {
+			beneficiaries[_beneficiary] = _privilege;
+			// save new privilege contract
+			privileges[_privilege] = true;
+			// privileges count of a beneficiary are initialized to 0
+			privilegesBalances[_privilege] = 0;
+			beneficiaryPositions[beneficiaryCount] = _beneficiary;
 			beneficiaryCount++;
 		}
 	}
 
-	// Before removing an existing beneficiary, the contrat spread its balance among existing beneficiaries
-	function unregisterBeneficiary(address _beneficiary) public onlyCertifier {
-		require(beneficiaries[_beneficiary].isSet == true);
-		beneficiaries[_beneficiary].active = false;
-		beneficiaries[_beneficiary].paid = false;
-		beneficiaryCount--;
+	// Update privileges
+	function updatePrivileges(uint256 _value) public {
+		// check if the msg.sender is a beneficiary
+		require(privileges[msg.sender] == true);
+		// add privileges to the beneficiary
+		privilegesBalances[msg.sender] = privilegesBalances[msg.sender].add(_value);
 	}
 
+	// Get the beneficiaries count
 	function getBeneficiaryCount() public view returns (uint) {
 		return beneficiaryCount;
 	}
 
-	// Paginate search of beneficiaries that has been registered at least once
-	// starting from startIndex and returns 100 max beneficiaries.
-	function getPaginateBeneficiaries(uint startIndex, uint size) public view returns (address[100]) {
-		address[100] memory res;
-		if (size > 100)
-			size = 100;
-		if (startIndex >= beneficiaryCountMax) {
-			return res;
-		}
-		if (startIndex + size > beneficiaryCountMax) {
-			size = beneficiaryCountMax - startIndex;
-		}
-		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex+i];
-			res[i] = benef;
-		}
-		return res;
+	function getPrivilegeAdr(address _beneficiary) public view returns (address){
+		return beneficiaries[_beneficiary];
 	}
 
-	// Paginate search of beneficiaries that has been registered at least once
-	// starting from startIndex and returns 100 max beneficiaries.
-	function getPaginateActiveBeneficiaries(uint startIndex, uint size) public view returns (address[100]) {
-		address[100] memory res;
+	function getPrivileges(address _privilege) public view returns (uint){
+		return privilegesBalances[_privilege];
+	}
+	// Set up the privilegeRequest address by the admin
+	function setPrivilegeRequestAddress(address _privilegeRequest) public onlyAdmin{
+		privilegeRequest = _privilegeRequest;
+	}
+
+	// Make a distribution of don
+	function distribute() public{
+		require(now >= lastTimestamp.add(1 hours));
+		// check if we already have beneficiaries to make a transfer
+		require(beneficiaryCount > 0);
+		// check if the balance is suffisant to make a transfer
+		require(address(this).balance >= fixedValue);
+
+		// balance
+		uint balance = address(this).balance;
+		// determinate the exact number of beneficiaries going to get some ether
+		uint nbBenef = balance.div(fixedValue);
+		// counter to index the number of paid beneficiaries
 		uint counter = 0;
-		if (size > 100)
-			size = 100;
-		if (startIndex >= beneficiaryCountMax) {
-			return res;
-		}
-		if (startIndex + size > beneficiaryCountMax) {
-			size = beneficiaryCountMax - startIndex;
-		}
-		for (uint i = 0; i < size; i++) {
-			address benef = beneficiaryPositions[startIndex+i];
-			if (beneficiaries[benef].active) {
-				res[counter] = benef;
-				counter++;
-			}
-		}
-		return res;
-	}
 
-
-function distribute(uint256 _value) public onlyCertifier {
-	require(address(this).balance >= _value);
-	require(beneficiaryCount > 0);
-
-	uint balance = address(this).balance;
-	uint nbBenef = balance.div(_value);
-	uint counter = 0;
-
-	// parcours de la liste des beneficiaires
-	for(uint i = 0; i < beneficiaryCountMax; i++){
-		// check si le nombre exacte des bénéficiaires à payer est atteint
-		if(counter != nbBenef && counter < nbBenef){
-			address benef = beneficiaryPositions[i];
-			// Si le bénéficiaire est payé ou le bénéficiaire n'est pas actif, on passe au suivant
-			if(beneficiaries[benef].paid == true || beneficiaries[benef].active == false){
-				i++;
-			}
-			else{
-				// on paye le bénéficiaire
-				benef.transfer(_value);
-				emit evtSendSuccess(benef, _value);
-				counter ++;
-				beneficiaries[benef].paid = true;
-				if(i == beneficiaryCountMax.sub(1) && counter < nbBenef){
-					resetPayment();
+		for(uint i = 0; i < beneficiaryCount; i++){
+			// check if the number of beneficiaries to pay is not achieved
+			if(counter != nbBenef && counter < nbBenef){
+				address benef = beneficiaryPositions[i];
+				// check if the beneficiary have enough privilegesBalances to receive a transfer
+				if(privilegesBalances[beneficiaries[benef]] < fixedValue){
+					// if the beneficiary haven't enough, we will move to the next one
+					i++;
+				}
+				else{
+					// if he have enough, transfer the "fixedValue"
+					require(benef.send(fixedValue));
+					emit evtSendSuccess(benef, fixedValue);
+					// update his privileges
+					address privilege = beneficiaries[benef];
+					uint256 newPrivilege = (privilegesBalances[privilege]).sub(5000000000000000);
+					privilegesBalances[privilege] = newPrivilege;
+					counter ++;
 				}
 			}
+			else{
+				// if the number of beneficiaries to pay is achieved
+				i = beneficiaryCount;
+			}
 		}
-		else{
-			// les bénéficiaires sont payés, on force la sortie de la boucle
-			i = beneficiaryCountMax;
-		}
+		// update the timestamp with the new time of execution
+		lastTimestamp = now;
 	}
-}
 
-function resetPayment() internal{
-	for(uint i = 0; i < beneficiaryCountMax; i++){
-		address benef = beneficiaryPositions[i];
-		beneficiaries[benef].paid = false;
-	}
-}
 }
