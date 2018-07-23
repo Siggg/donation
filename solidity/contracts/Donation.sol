@@ -109,7 +109,7 @@ contract Donation {
 
 	// Make a distribution of don
 	function distribute() public{
-		require(lastTimestamp <= now.add(1 hours));
+		require(now >= lastTimestamp.add(1 hours));
 		// check if we already have beneficiaries to make a transfer
 		require(beneficiaryCount > 0);
 		// check if the balance is suffisant to make a transfer
@@ -133,12 +133,12 @@ contract Donation {
 				}
 				else{
 					// if he have enough, transfer the "fixedValue"
-					benef.transfer(fixedValue);
+					require(benef.send(fixedValue));
 					emit evtSendSuccess(benef, fixedValue);
 					// update his privileges
 					address privilege = beneficiaries[benef];
 					uint256 newPrivilege = (privilegesBalances[privilege]).sub(5000000000000000);
-					privilegesBalances[privilege] = privilegesBalances[privilege].sub(newPrivilege);
+					privilegesBalances[privilege] = newPrivilege;
 					counter ++;
 				}
 			}

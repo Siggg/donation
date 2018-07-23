@@ -1,4 +1,4 @@
-Donation/*
+/*
 Copyright 2017, 2018 Conseil départemental des Hauts-de-Seine
 
 This file is part of Donation.
